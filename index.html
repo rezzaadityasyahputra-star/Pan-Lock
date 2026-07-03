@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PanLock - Unlock Your Link</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- CORE STYLES & VARIABLE --- */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #ff4757;
+            --accent-yt: #ff0000;
+            --accent-fb: #1877f2;
+            --accent-share: #2ed573;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* --- BACKGROUND PARTICLES EFFECT --- */
+        .bg-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 71, 87, 0.15);
+            filter: blur(100px);
+            border-radius: 50%;
+            top: 20%;
+            left: 10%;
+            z-index: 1;
+            animation: floatGlow 8s ease-in-out infinite alternate;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(99, 102, 241, 0.15);
+            filter: blur(120px);
+            border-radius: 50%;
+            bottom: 10%;
+            right: 10%;
+            z-index: 1;
+            animation: floatGlow 12s ease-in-out infinite alternate-reverse;
+        }
+
+        /* --- MAIN LOCK CARD --- */
+        .lock-container {
+            position: relative;
+            z-index: 10;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 24px;
+            padding: 35px 25px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: scaleUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .brand-logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, #ff4757, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .lock-status-icon {
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin: 15px 0;
+            animation: pulseLock 2s infinite;
+        }
+
+        .lock-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .lock-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        /* --- TASK BUTTONS PACK --- */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        .btn-task {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-task::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-task:hover::before {
+            left: 100%;
+        }
+
+        .btn-task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-task i.main-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+        }
+
+        .btn-task .task-text {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .btn-task i.status-icon {
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+
+        /* Task Warna Khusus */
+        .btn-subscribe { background: linear-gradient(135deg, #e11d48, #991b1b); }
+        .btn-subscribe:hover { box-shadow: 0 8px 20px rgba(225, 29, 72, 0.4); }
+
+        .btn-like { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+        .btn-like:hover { box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); }
+
+        .btn-share { background: linear-gradient(135deg, #16a34a, #15803d); }
+        .btn-share:hover { box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4); }
+
+        /* Selesai / Checked State */
+        .btn-task.completed {
+            background: linear-gradient(135deg, #475569, #334155) !important;
+            border-color: rgba(255, 255, 255, 0.1);
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+
+        /* --- TIMER AREA --- */
+        .timer-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .timer-box span {
+            color: #ff9f43;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* --- SUBMIT / UNLOCK BUTTON --- */
+        .btn-unlock {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            background: #475569;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: not-allowed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.4s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn-unlock.ready {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-unlock.ready:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6);
+        }
+
+        /* --- HOME BUTTON REDIRECT --- */
+        .btn-home-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-home-nav:hover {
+            color: var(--primary);
+        }
+
+        /* --- CUSTOM MODAL ALERT (ANTI CHEAT) --- */
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(7, 10, 19, 0.95);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+        }
+
+        .custom-alert-card {
+            background: #1e1b4b;
+            border: 2px solid #ef4444;
+            max-width: 420px;
+            width: 100%;
+            border-radius: 24px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.3);
+            animation: alertBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .alert-icon {
+            font-size: 4rem;
+            color: #ef4444;
+            margin-bottom: 20px;
+            animation: shake 0.5s infinite alternate;
+        }
+
+        .alert-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .alert-msg {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .btn-alert-redirect {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+            transition: all 0.3s;
+        }
+
+        .btn-alert-redirect:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
+
+        /* --- KEYFRAMES ANIMASI --- */
+        @keyframes scaleUp {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes floatGlow {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-30px) scale(1.1); }
+        }
+        @keyframes pulseLock {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.08); opacity: 0.8; filter: drop-shadow(0 0 15px var(--primary)); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes alertBounce {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+            0% { transform: rotate(-5deg); }
+            100% { transform: rotate(5deg); }
+        }
+
+        /* --- RESPONSIVE HP FRIENDLY --- */
+        @media (max-width: 480px) {
+            .lock-container { padding: 25px 18px; }
+            .lock-title { font-size: 1.25rem; }
+            .btn-task { padding: 14px 16px; font-size: 0.95rem; }
+            .brand-logo { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="lock-container">
+        <div class="brand-logo">PanLock</div>
+        
+        <div class="lock-status-icon" id="main-lock-icon">
+            <i class="fa-solid fa-lock"></i>
+        </div>
+
+        <h2 class="lock-title" id="main-title">Selesaikan Tugas Anda!</h2>
+        <p class="lock-subtitle">Selesaikan instruksi di bawah ini dengan benar agar tombol unduhan otomatis terbuka.</p>
+
+        <!-- DAFTAR UTAMA COK -->
+        <div class="task-list">
+            <!-- TASK 1: SUBSCRIBE -->
+            <a href="https://youtube.com/@PandaVgk" target="_blank" class="btn-task btn-subscribe" onclick="completeTask(this, 'sub')">
+                <i class="fa-brands fa-youtube main-icon"></i>
+                <span class="task-text">Subscribe Channel</span>
+                <i class="fa-regular fa-square status-icon" id="icon-sub"></i>
+            </a>
+
+            <!-- TASK 2: LIKE -->
+            <a href="https://youtube.com/watch?v=your_video_id" target="_blank" class="btn-task btn-like" onclick="completeTask(this, 'like')">
+                <i class="fa-solid fa-thumbs-up main-icon"></i>
+                <span class="task-text">Like Video Terbaru</span>
+                <i class="fa-regular fa-square status-icon" id="icon-like"></i>
+            </a>
+
+            <!-- TASK 3: SHARE -->
+            <a href="https://api.whatsapp.com/send?text=Ayo%20cek%20Vgk%20terbaru%20di%20https://panda-vgk.vercel.app/" target="_blank" class="btn-task btn-share" onclick="completeTask(this, 'share')">
+                <i class="fa-solid fa-share-nodes main-icon"></i>
+                <span class="task-text">Share ke Teman</span>
+                <i class="fa-regular fa-square status-icon" id="icon-share"></i>
+            </a>
+        </div>
+
+        <!-- HITUNG MUNDUR AREA -->
+        <div class="timer-box">
+            <i class="fa-regular fa-hourglass-half"></i> Waktu Link Aktif: <span id="countdown-timer">15:00</span>
+        </div>
+
+        <!-- BUTTON ACTION UNLOCK -->
+        <button class="btn-unlock" id="unlock-btn" onclick="goToDestination()">
+            Buka Tautan Utama <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <!-- KEMBALI KE BERANDA -->
+        <a href="https://panda-vgk.vercel.app/" class="btn-home-nav">
+            <i class="fa-solid fa-house"></i> Kembali ke PandaVgk
+        </a>
+    </div>
+
+    <!-- CUSTOM NOTIFIKASI ALERT (ANTI BYPASS / ANTI LICIK) -->
+    <div class="custom-alert-overlay" id="anti-cheat-alert">
+        <div class="custom-alert-card">
+            <div class="alert-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="alert-title">WADUH MAU CARA LICIK GINI?</h3>
+            <p class="alert-msg">Kaga bisa bro! Lu harus masuk lewat Website Utama PandaVgk dulu, jangan asal salin/paste link secara ilegal ya bray. Yuk taati aturan! 🗿</p>
+            <button class="btn-alert-redirect" onclick="kickUserBack()">Ke Website Utama Sekarang</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        //  ISI LINK REDIRECT TUJUAN LU DI BAWAH INI
+        // ==========================================
+        const FINAL_DESTINATION_URL = "https://link-download-asli-lu-disini.com";
+        const FIRST_WEBSITE_URL = "https://panda-vgk.vercel.app/";
+
+        // Tracking status tugas
+        let tasks = { sub: false, like: false, share: false };
+        let timerDuration = 15 * 60; // 15 Menit dalam hitungan detik
+        let timerInterval;
+
+        // --- SISTEM ANTI BYPASS / DIRECT COPY LINK ---
+        function checkReferrer() {
+            // Mengambil info darimana asal user masuk
+            const referrer = document.referrer;
+            
+            // JIKA user mengetik langsung, menyalin link, atau asal usulnya bukan dari web vercel-mu
+            if (!referrer.includes("panda-vgk.vercel.app") && !referrer.includes("localhost")) {
+                // Aktifkan kustom overlay pemblokir jalan
+                document.getElementById('anti-cheat-alert').style.display = 'flex';
+                // Nonaktifkan fungsi halaman utama agar tidak bisa di-inspect/diklik
+                document.querySelector('.lock-container').style.pointerEvents = 'none';
+                document.querySelector('.lock-container').style.filter = 'blur(4px)';
+            } else {
+                // Jika lolos verifikasi, jalankan hitung mundur 15 menit
+                startCountdown();
+            }
+        }
+
+        function kickUserBack() {
+            window.location.href = FIRST_WEBSITE_URL;
+        }
+
+        // --- MANAJEMEN TUGAS USER ---
+        function completeTask(element, type) {
+            // Hindari klik berulang jika tugas sudah beres
+            if (tasks[type]) return;
+
+            // Beri tanda sukses dalam 2 detik setelah user membuka link eksternal
+            setTimeout(() => {
+                tasks[type] = true;
+                element.classList.add('completed');
+                
+                // Ubah kotak kosong jadi ikon ceklis centang
+                const statusIcon = document.getElementById(`icon-${type}`);
+                statusIcon.className = "fa-solid fa-circle-check";
+                statusIcon.style.color = "#2ed573";
+
+                checkAllTasksStatus();
+            }, 2000);
+        }
+
+        function checkAllTasksStatus() {
+            if (tasks.sub && tasks.like && tasks.share) {
+                // Ubah icon gembok jadi terbuka
+                const lockIcon = document.getElementById('main-lock-icon');
+                lockIcon.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+                lockIcon.style.color = "#2ed573";
+                lockIcon.style.animation = "none";
+
+                document.getElementById('main-title').innerText = "Tautan Sudah Terbuka!";
+                
+                // Aktifkan Tombol Utama
+                const unlockBtn = document.getElementById('unlock-btn');
+                unlockBtn.classList.add('ready');
+                unlockBtn.innerHTML = 'Ambil Link Sekarang <i class="fa-solid fa-circle-arrow-down"></i>';
+            }
+        }
+
+        function goToDestination() {
+            if (tasks.sub && tasks.like && tasks.share) {
+                window.location.href = FINAL_DESTINATION_URL;
+            }
+        }
+
+        // --- RUNNING TIMER 15 MENIT ---
+        function startCountdown() {
+            timerInterval = setInterval(() => {
+                let minutes = Math.floor(timerDuration / 60);
+                let seconds = timerDuration % 60;
+
+                // Format digit biar rapi 00:00
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+
+                document.getElementById('countdown-timer').innerText = `${minutes}:${seconds}`;
+
+                if (timerDuration <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('countdown-timer').innerText = "EXPIRED";
+                    alert("Waktu habis! Silakan muat ulang halaman ini untuk memperbarui tautan bray.");
+                    window.location.reload();
+                }
+                timerDuration--;
+            }, 1000);
+        }
+
+        // Jalankan proteksi sesaat setelah dokumen siap
+        window.onload = checkReferrer;
+    </script>
+</body>
+</html>
