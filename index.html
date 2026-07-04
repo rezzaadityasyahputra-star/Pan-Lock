@@ -65,7 +65,7 @@
         .btn-task {
             width: 100%;
             padding: 1.2rem;
-            background: #000000;
+            background: #ef4444; /* MERAH UTAMA YT */
             color: #ffffff;
             border: none;
             border-radius: 12px;
@@ -76,11 +76,13 @@
             align-items: center;
             gap: 12px;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
         }
 
         .btn-task:hover {
-            background: #1f2937;
+            background: #dc2626; /* MERAH LEBIH GELAP SAAT HOVER */
             transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3);
         }
 
         /* Bungkus teks agar status badge terdorong ke kanan */
@@ -91,7 +93,7 @@
             flex: 1;
         }
 
-        /* Logo YT Style */
+        /* Logo YT & Bell Style */
         .yt-icon {
             width: 24px;
             height: 24px;
@@ -102,10 +104,22 @@
         /* Status Badge di dalam Tombol Tugas */
         .status-badge {
             font-size: 0.85rem;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
             padding: 4px 12px;
             border-radius: 20px;
             transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+            min-width: 75px;
+            text-align: center;
+        }
+
+        /* Ketika Tugas Sedang Berjalan (Counting down) */
+        .btn-task.loading {
+            background: #f59e0b; /* Warna Kuning Oranye saat nunggu */
+            cursor: not-allowed;
+            pointer-events: none;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Ketika Tugas Selesai */
@@ -113,8 +127,10 @@
             background: #f3f4f6;
             color: #9ca3af;
             cursor: not-allowed;
+            pointer-events: none;
             transform: none;
             border: 2px solid #e5e7eb;
+            box-shadow: none;
         }
 
         .btn-task.completed .yt-icon {
@@ -229,6 +245,7 @@
 
     <main>
         <div id="contentSection" style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
+            
             <button id="btnSub" class="btn-task" onclick="doTask('sub', 'https://www.youtube.com/@TargetChannelMu')">
                 <div class="btn-content">
                     <svg class="yt-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
@@ -239,7 +256,7 @@
 
             <button id="btnBell" class="btn-task" onclick="doTask('bell', 'https://www.youtube.com/@TargetChannelMu')">
                 <div class="btn-content">
-                    <svg class="yt-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <svg class="yt-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                     <span>Sub & Hit Bell</span>
                 </div>
                 <span id="badgeBell" class="status-badge">Belum</span>
@@ -261,39 +278,53 @@
         // --- PROTEKSI SCRIPT (ANTI LICIK) ---
         window.addEventListener('DOMContentLoaded', () => {
             const referrer = document.referrer;
-            
-            // Mengecek apakah asal kedatangan user beneran dari website utamamu
-            // Jika kosong (artinya ketik manual/copas langsung) atau tidak mengandung domain utamamu:
             if (!referrer.includes("panda-vgk.vercel.app")) {
-                // Sembunyikan semua tombol misi utama
                 document.getElementById('contentSection').style.display = 'none';
                 document.getElementById('subTitle').style.display = 'none';
-                
-                // Tampilkan kotak peringatan licik
                 const alertContainer = document.getElementById('cheatAlert');
                 alertContainer.style.display = 'flex';
             }
         });
 
-        // --- SISTEM PEMBUKA LINK ---
+        // --- SISTEM PEMBUKA LINK (DENGAN JEDA 10 DETIK) ---
         let isSubscribed = false;
         let isBelled = false;
-        const DESTINATION_LINK = "https://google.com"; // <-- LINK AKHIR COCOK MASUKKAN DI SINI
+        const DESTINATION_LINK = "https://google.com"; // <-- LINK UTAMA
 
         function doTask(type, url) {
+            // 1. Buka tab baru ke YouTube target
             window.open(url, '_blank');
 
-            if (type === 'sub') {
-                isSubscribed = true;
-                document.getElementById('btnSub').classList.add('completed');
-                document.getElementById('badgeSub').innerHTML = '✓ Selesai';
-            } else if (type === 'bell') {
-                isBelled = true;
-                document.getElementById('btnBell').classList.add('completed');
-                document.getElementById('badgeBell').innerHTML = '✓ Selesai';
-            }
+            // 2. Tentukan elemen berdasarkan tipe tugas
+            const targetBtn = type === 'sub' ? document.getElementById('btnSub') : document.getElementById('btnBell');
+            const targetBadge = type === 'sub' ? document.getElementById('badgeSub') : document.getElementById('badgeBell');
 
-            checkCompletion();
+            // 3. Ubah tombol menjadi status "Memproses" (Warna Kuning Oranye) & kunci tombolnya agar tidak bisa di-spam klik
+            targetBtn.classList.add('loading');
+            
+            let timeLeft = 10; // Jeda waktu dalam detik
+            targetBadge.innerHTML = timeLeft + 's';
+
+            // 4. Jalankan hitung mundur 10 detik
+            const countdown = setInterval(() => {
+                timeLeft--;
+                targetBadge.innerHTML = timeLeft + 's';
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown); // Hentikan hitung mundur
+                    
+                    // Update status setelah 10 detik selesai
+                    targetBtn.classList.remove('loading');
+                    targetBtn.classList.add('completed');
+                    targetBadge.innerHTML = '✓ Selesai';
+
+                    if (type === 'sub') isSubscribed = true;
+                    if (type === 'bell') isBelled = true;
+
+                    // Cek apakah kedua tugas sudah berstatus sukses
+                    checkCompletion();
+                }
+            }, 1000);
         }
 
         function checkCompletion() {
